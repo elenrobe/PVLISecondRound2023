@@ -1,0 +1,23 @@
+body {
+    font-family: georgia;
+    margin-bottom: 2em;
+    margin-top: 1em;
+    margin-left: 2em;
+    margin-right: 2em;
+    text-align: justify;
+    /* width: 35em; */
+    alignment-baseline: central;
+}
+
+h1.title {
+    font-size: 2.5em;
+    text-align: center;
+}
+
+h2.author {
+    text-align: center;
+}
+
+.date {
+    text-align: center;
+}
