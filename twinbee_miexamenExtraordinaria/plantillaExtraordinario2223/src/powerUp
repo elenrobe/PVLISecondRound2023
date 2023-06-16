@@ -1,0 +1,42 @@
+// export default class PowerUp extends Phaser.GameObjects.Sprite {
+
+   
+//     constructor(scene, x, y, nombreImg, type) {
+    
+//      super(scene, x, y, 'greenbell');
+     
+//      this.scene.add.existing(this);
+//      this.scene.physics.add.existing(this);
+//      this.body.setCollideWorldBounds(); 
+//      this.y -= this.height;
+
+//      this.body.moves=false;
+//      this.movesbyTween = true;
+//      this.scene=scene;
+    
+//      this.nameImg= nombreImg;
+//      this.type = type;
+     
+     
+//    }
+   
+//    /**
+//    * Used to destroy a power up after making its effect
+//    */
+//    destroyObject(){
+//      this.destroy();
+//    }
+ 
+//    preUpdate(t,dt)
+//    {
+//     super.preUpdate(t,dt);
+//     this.onCollisionPlayer();
+//    }
+
+//    onCollisionPlayer(){
+//     if (this.scene.physics.overlap(this.scene.player, this)) {
+//       this.scene.player.state = this.type;
+//       this.destroy();
+//   }
+//    }
+//  }
