@@ -1,0 +1,58 @@
+Contenido Escenas
+
+- emptyscene: escena vacía de base
+
+- bigtiledscene: cámara con el follow correcto y con límites (configCameraForScroll()), pillar tamaño del canvas, debug draw
+
+- scrollscene: scroll básico con parallax de tres capas, con setDepth, sin gravedad, creación de objetos, 
+    iteración de grupos, pausa de juego y game over/win, phaser random 2, update en scene
+
+- parallax: versión inicial del parallax, sin enemigos, update en scene, timeout
+
+- parallaxEnemies: sonidos, scroll de distintos tipos, creación de enemigos, update en scene, timeout
+
+- space: tiled con varias capas, platformer con generación aleatoria, collision callbacks, sonidos, 
+    pushable vs immovable, movimiento toroidal, animaciones, phaser random, debug draw
+
+- torusscene: movimiento toroidal al colisionar, callback, rectangulo
+
+- tiledscene y tiledscenehidden: tiled, (camara fija), movimiento toroidal en la parte inferior, 
+    diferentes formas de collision properties, colliders, debug draw
+
+- ballsscene: rebote, cooldown de colisión, temporizador, dirección aleatoria mejorada, rebote, restart,
+    bordes mapa y rect, iteración de grupo y creación de objetos en collision callback, game over/win, animaciones
+
+- menu: menú básico de niveles con botones de textos, pasar array de parámetros al create() de una escena
+
+- mainmenu: botones de sprite y botones de textos, estilo de css en los textos, musica comentada
+
+- bubblesscene: disparo vertical, destrucción de proyectiles, generación aleatoria de objetos, rebote, 
+    collision callbacks, animaciones, old star method
+
+- animationsScene: escena vacía con animaciones de player y bounds
+
+- game: pixelArt, gravity, physics, debug
+
+- end: escena de fin de juego con input
+
+- hook: objeto que usa el overlap para destruirse
+
+- meteor: objeto con rotación en base a su velocidad, destrucción en timeout
+
+- object: base de objeto con sprite de estrella
+
+- player: inputs y teclas space y esc, animaciones salto y andar, llevar sprite en la cabeza
+
+- playerAnimations: animaciones para direcciones, input y tecla esc, recoger estrella obsoleto, todos los inputs de teclas
+
+- playerScroll: movimiento constante
+
+- playerBee: movimiento constante en x y movimiento por input en y, recoger flores
+
+- playerShoot: disparo vertical, todos los inputs de teclas, esc
+
+- spaceship: objeto con colisiones, timeout y estado de juego, y fin de juego
+
+Reminders: + No gestionar colisiones dos veces
+           + Shift-Alt para seleccionar una columna
+           + Ctrl-Tab para la última pestaña
