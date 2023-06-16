@@ -1,5 +1,4 @@
-Nombre: Elena Robert Núñez
-DNI: 50637908G
+
 
 están muchas cosas sin terminar por falta de tiempo. la mayoría de sonidos creo que faltan, los colores de las letras etc
 El tema de que se destruyan los dos jugadores y enemigos al perder uno me falta
