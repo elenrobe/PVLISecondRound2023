@@ -1,0 +1,255 @@
+APUNTES PVLI
+
+Cargar tilemap:
+{
+	// MAPA
+	this.map = this.make.tilemap({ 
+		key: 'tilsetJSON', 
+			tileWidth: 8, 
+			tileHeight: 8 
+	});
+
+	// Tileset
+	const tileset1 = this.map.addTilesetImage('ground_ts', 'ground_ts');
+
+	// Crear una capa y configurar su colision
+	this.groundLayer = this.map.createLayer('ground', tileset1);
+	this.groundLayer.setCollisionBetween(0,999);
+	
+	// Con el jugador
+	this.physics.add.collider(this.player, this.groundLayer);
+}
+
+Script suelo:
+export default class Floor extends Phaser.GameObjects.Sprite {
+
+  constructor(scene, y) {
+    super(scene, 0, scene.sys.game.canvas.height-y);
+
+    this.scene.add.existing(this);
+    this.scene.physics.add.existing(this, true);
+
+    this.scene.physics.add.collider(this);
+
+    // Cambiamos el tamaño del body para ocupar todo el ancho de la escena
+    this.body.width = scene.sys.game.canvas.width+100;
+    this.body.height = 10;
+  }
+}
+
+Textos:
+{
+	// Añadir texto
+	this.pickedFuel = this.scene.add.text(this.x, this.y - this.height + 10, this.fuel + "/" + this.max, {fontFamily: 'Pixeled', fontSize: 10, color: '#FFFFFF'}).setOrigin(0.5,0.5);
+
+	//Actualizarlo
+	this.pickedFuel.text = this.fuel + "/" + this.max;
+}
+
+
+Setear y detectar colision:
+// Decimos que cuerpos colisionan
+		this.physics.add.collider(floor, this.boxesPool.getPhaserGroup()); // Suelo con cajas
+		this.physics.add.collider(knight, this.boxesPool.getPhaserGroup()); // Caballero con cajas
+		this.physics.add.collider(knight, floor); // Caballero con suelo
+		
+		/*
+		 * Escuchamos los eventos de colisión en el mundo para poder actuar ante ellos
+		 * En este caso queremos detectar cuando el caballero colisiona con el suelo para activar el salto del personaje
+		 * El salto del caballero lo desactivamos en su "clase" (archivo knight.js) para evitar dobles saltos
+		 * También comprobamos si está en contacto con alguna caja mientras ataca, en ese caso destruimos la caja
+		 */
+		this.physics.world.on('collide', (gameObject1, gameObject2, body1, body2) => {
+			// Comprobamos si la colisión es del caballero con una caja (grupo boxes)
+			if(gameObject1 === knight && this.boxesPool.getPhaserGroup().contains(gameObject2)){
+				if(gameObject1.isAttackInProcess()) {
+					gameObject2.destroyMe()
+				} 				
+			}
+		});	
+
+		// Registramos que el motor nos avise si las cajas se solapan con el caballero
+		// y le decimos la funcion que debe ejecutar si esto pasa
+		// Esto sucede cuando nos movemos y atacamos a la vez
+		this.physics.add.overlap(knight, boxes, (knight, box) => {
+			if(knight.isAttackInProcess()) {
+				box.destroyMe()
+			} 				
+		});
+
+Script Pool:
+export default class Pool {
+	/**
+	 * Pool de objetos. En este caso usaremos la pool para reutilizar las cajas del juego y tener un máximo.
+	 * La pool nos evita, además, tener que hacer todo el rato new y destroy de los objetos. Nos evitamos perder
+	 * tiempo de CPU en la creación de nuevos objetos, reservar memoria, y en su destrucción o liberación de memoria
+	 * por el recolector de basura.
+	 * @param {Scene} scene - escena en la que aparecen los elementos de la pool
+	 * @param {Number} max - elemento html que define la cantidad máxima de la pool sobre la que no queremos que crezca más
+	 * @param {Boolean} reuse - decimos si queremos reutilizar elementos de la pool que están vivos si no hay más remedio
+	 */
+	constructor (scene, max, reuse) {
+		this._group = scene.add.group();		
+		this.max = max;
+		this.scene = scene;
+		this.reuse = reuse;
+	}
+	
+	/**
+	 * Método para añadir nuevos objetos a la pool.
+	 * Nos servirá para crear una pool inicial si no lo hemos hecho en el constructor.
+	 * Todos los elementos añadidos los activamos como disponibles para reutilizar
+	 * @param {Array} entities - array de objetos que añadir a la pool
+	 */
+	addMultipleEntity(entities) {
+		this._group.addMultiple(entities);
+		entities.forEach(c => {
+			this._group.killAndHide(c);
+			c.body.checkCollision.none = true;
+		});
+	}
+	
+	spawn (x, y, animationKey='none') {
+		let entity = this._group.getFirstDead();
+		
+		/* 
+			En caso de no tener entidades disponibles en la pool, hay que decidir que hacer
+			Aquí podemos seguir varias estrategias, por ejemplo:
+			 - aumentar el tamaño de la pool en una cantidad concreta 
+			 - duplicar el tamaño
+			 - reutilizar la entidad que más tiempo ha estado viva
+		*/
+		if(!entity){
+			if (this._group.getLength() < this.max.value || this.max.value === 0) {
+				let newEntities = [];
+				let newMax = this.max.value < this._group.getLength()*2 ? this.max.value-this._group.getLength() : this._group.getLength()
+				for(let i=0; i<newMax; i++){ //En este caso hemos elegido duplicar el tamaño
+					entity = new Box(this.scene, x, y, this)
+					newEntities.push(entity);
+				}	
+				this.addMultipleEntity(newEntities);
+			} 
+			 //Como hemos mencionado podemos querer reutilizar el elemento que más tiempo ha estado vivo si no tenemos otra opción
+			else if (this.reuse.checked) { 
+				entity = this._group.getFirstNth(1, true);
+				this._group.remove(entity);
+				this._group.add(entity);	
+			}
+			
+		}
+		
+
+		// Cuando ya hemos conseguido la entidad de alguna forma la reutilizamos
+		if (entity) {
+			entity.x = x;
+			entity.y = y;
+			entity.play(animationKey)
+			entity.setActive(true);
+			entity.setVisible(true); 
+			entity.body.checkCollision.none = false;
+		} 
+		console.log(entity)
+		return entity;
+	}
+	
+	/**
+	 * Método para liberar una entidad
+	 * @param {Object} entity - entidad de la pool que queremos marcar como libre
+	 */
+	release (entity) {
+		entity.body.checkCollision.none = true;
+		this._group.killAndHide(entity);
+	}
+
+
+	getPhaserGroup(){
+		return this._group;
+	}
+}
+
+Script Parallax:
+create() {
+		/* Creamos el parallax */
+		const w = this.scale.width;
+		const h = this.scale.height;
+ 		
+ 		this.add.image(w*0.5, h*0.5, 'sky').setScrollFactor(0)
+		this.createAligned(2,'cloudsBG', 0.2);
+		this.createAligned(2,'montain', 0.4);
+		this.createAligned(4,'clouds3', 0.6);
+		this.createAligned(5,'clouds2', 0.8);
+		this.createAligned(5,'clouds1', 1);
+		/*
+			Importante:
+			"Please be aware that scroll factor values other than 1 are not taken in to consideration when calculating physics collisions. 
+			Bodies always collide based on their world position, but changing the scroll factor is a visual adjustment to where the textures 
+			are rendered, which can offset them from physics bodies if not accounted for in your code."
+			Mirar doc: https://photonstorm.github.io/phaser3-docs/Phaser.GameObjects.Components.ScrollFactor.html
+		*/
+
+
+		/* Creamos el minimap como una cámara nueva con zoom */
+		this.minimap = this.cameras.add(0, 0, 200, 80)
+			.setZoom(0.2)
+			.setName('minimap');
+
+		/* Instanciamos el pájaro (personaje jugable) y hacemos que la cámara principal se centre en él. */
+        this.bird = new Bird(this, w/2, h/2, this.miles);
+        this.cameras.main.startFollow(this.bird, false, 0.2, 0.2);
+	}
+
+	update(time, dt){
+		if(this.playing!=true){
+			this.music.play();
+			this.playing = true;
+		}
+	}
+
+	/**
+	 * Método auxiliar para cargar las imágenes necesarias de nuestro parallax
+	 * 
+	 */
+	createAligned(count, imageKey, srollFactor){
+		let x = 0;
+		for (let i = 0 ; i < count; i++){
+			const m = this.add.image(x, 0, imageKey)
+				.setOrigin(0,0)
+				.setScrollFactor(srollFactor);
+			x += m.width
+		}
+	}
+
+Tweens:
+{
+	let tween = this.tweens.add({
+		targets: coins,
+		scale: 0.8,
+		duration: 1000,
+		ease: 'Sine.easeInOut',
+		yoyo: true,
+		repeat: -1,
+		delay: 1000
+	})
+
+	let timeline = this.tweens.createTimeline({loop:-1});
+
+	timeline.add({
+		targets: coins,
+		scale: 0.8,
+		duration: 1000,
+		ease: 'Sine.easeInOut',
+		yoyo: true,
+		delay: 100
+	});
+	timeline.add({
+		targets: coins,
+		scaleX: 0,
+	    duration: 500,
+	    ease: 'Sine.easeInOut',
+	    repeat: 0,
+	    yoyo: true,
+	    delay: 0,
+	    repeat: 3,
+	});
+	timeline.play();
+}
